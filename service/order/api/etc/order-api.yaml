@@ -1,0 +1,17 @@
+Name: order-api
+Host: 0.0.0.0
+Port: 8030
+
+JwtAuth:
+  AccessSecret: go-zero-ecommerce-jwt-secret-key-2024
+  AccessExpire: 86400
+
+OrderRpc:
+  Etcd:
+    Hosts:
+      - etcd:2379
+    Key: order.rpc
+
+Log:
+  Level: info
+  Mode: console

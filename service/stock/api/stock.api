@@ -1,0 +1,65 @@
+syntax = "v1"
+
+info(
+	title: "库存服务 API"
+	desc: "库存服务 API"
+	author: "go-zero-ecommerce"
+	version: "v1.0"
+)
+
+type (
+	GetStockReq {
+		ProductId int64 `form:"productId,optional"`
+	}
+
+	GetStockResp {
+		Id        int64 `json:"id"`
+		ProductId int64 `json:"productId"`
+		Total     int32 `json:"total"`
+		Available int32 `json:"available"`
+		LockStock int32 `json:"lockStock"`
+		Sales     int32 `json:"sales"`
+	}
+
+	CreateStockReq {
+		ProductId int64 `json:"productId,optional"`
+		Num       int32 `json:"num,optional"`
+	}
+
+	CreateStockResp {
+		ProductId int64 `json:"productId"`
+		Total     int32 `json:"total"`
+		Available int32 `json:"available"`
+	}
+
+	DeductStockReq {
+		ProductId int64  `json:"productId,optional"`
+		Num       int32  `json:"num,optional"`
+		OrderNo   string `json:"orderNo,optional"`
+	}
+
+	DeductStockResp {
+		Success bool `json:"success"`
+	}
+)
+
+@server(
+	prefix: stock
+)
+service stock-api {
+	@handler getStockHandler
+	get /detail (GetStockReq) returns (GetStockResp)
+
+	@server(
+		jwt: JwtAuth
+		group: admin
+	)
+	@handler createStockHandler
+	post /create (CreateStockReq) returns (CreateStockResp)
+
+	@server(
+		jwt: JwtAuth
+	)
+	@handler deductStockHandler
+	post /deduct (DeductStockReq) returns (DeductStockResp)
+}

@@ -1,0 +1,100 @@
+syntax = "proto3";
+
+package order;
+option go_package = "./order";
+
+message OrderItemInfo {
+    int64 id = 1;
+    int64 productId = 2;
+    string productName = 3;
+    string productImage = 4;
+    int64 price = 5;
+    int32 num = 6;
+    int64 totalPrice = 7;
+}
+
+message OrderInfo {
+    int64 id = 1;
+    string orderNo = 2;
+    int64 userId = 3;
+    int64 totalAmount = 4;
+    int64 payAmount = 5;
+    int64 freightAmount = 6;
+    int64 discountAmount = 7;
+    int32 status = 8;
+    int32 payType = 9;
+    string receiverName = 10;
+    string receiverPhone = 11;
+    string receiverAddress = 12;
+    string remark = 13;
+    repeated OrderItemInfo items = 14;
+    string createdAt = 15;
+    string updatedAt = 16;
+}
+
+message OrderItemReq {
+    int64 productId = 1;
+    int32 num = 2;
+    int64 price = 3;
+}
+
+message CreateOrderRequest {
+    int64 userId = 1;
+    repeated OrderItemReq items = 2;
+    string receiverName = 3;
+    string receiverPhone = 4;
+    string receiverAddress = 5;
+    string remark = 6;
+}
+
+message CreateOrderResponse {
+    string orderNo = 1;
+    int64 id = 2;
+    int64 payAmount = 3;
+}
+
+message GetOrderRequest {
+    string orderNo = 1;
+}
+
+message GetOrderResponse {
+    OrderInfo order = 1;
+}
+
+message ListOrderRequest {
+    int64 userId = 1;
+    int32 page = 2;
+    int32 pageSize = 3;
+}
+
+message ListOrderResponse {
+    repeated OrderInfo orders = 1;
+    int64 total = 2;
+}
+
+message CancelOrderRequest {
+    string orderNo = 1;
+    int64 userId = 2;
+}
+
+message CancelOrderResponse {
+    bool success = 1;
+}
+
+message PayOrderRequest {
+    string orderNo = 1;
+    int64 userId = 2;
+    int32 payType = 3;
+}
+
+message PayOrderResponse {
+    bool success = 1;
+}
+
+service Order {
+    rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+    rpc GetOrder(GetOrderRequest) returns (GetOrderResponse);
+    rpc ListOrder(ListOrderRequest) returns (ListOrderResponse);
+    rpc CancelOrder(CancelOrderRequest) returns (CancelOrderResponse);
+    rpc PayOrder(PayOrderRequest) returns (PayOrderResponse);
+}

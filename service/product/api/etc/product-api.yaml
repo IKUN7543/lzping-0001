@@ -1,0 +1,17 @@
+Name: product-api
+Host: 0.0.0.0
+Port: 8010
+
+JwtAuth:
+  AccessSecret: go-zero-ecommerce-jwt-secret-key-2024
+  AccessExpire: 86400
+
+ProductRpc:
+  Etcd:
+    Hosts:
+      - etcd:2379
+    Key: product.rpc
+
+Log:
+  Level: info
+  Mode: console

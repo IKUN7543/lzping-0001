@@ -1,0 +1,17 @@
+Name: user-api
+Host: 0.0.0.0
+Port: 8000
+
+JwtAuth:
+  AccessSecret: go-zero-ecommerce-jwt-secret-key-2024
+  AccessExpire: 86400
+
+UserRpc:
+  Etcd:
+    Hosts:
+      - etcd:2379
+    Key: user.rpc
+
+Log:
+  Level: info
+  Mode: console

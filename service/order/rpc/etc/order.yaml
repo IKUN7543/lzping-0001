@@ -1,0 +1,35 @@
+Name: order.rpc
+ListenOn: 0.0.0.0:8031
+Etcd:
+  Hosts:
+    - etcd:2379
+  Key: order.rpc
+
+Mysql:
+  DataSource: root:123456@tcp(mysql:3306)/go_zero_ecommerce?charset=utf8mb4&parseTime=True&loc=Local
+
+Redis:
+  Host: redis:6379
+  Type: node
+  Pass: ""
+
+Kafka:
+  Brokers: kafka:9092
+  Topic: order-create-topic
+  Group: order-consumer-group
+
+StockRpc:
+  Etcd:
+    Hosts:
+      - etcd:2379
+    Key: stock.rpc
+
+ProductRpc:
+  Etcd:
+    Hosts:
+      - etcd:2379
+    Key: product.rpc
+
+Log:
+  Level: info
+  Mode: console

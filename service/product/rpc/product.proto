@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+package product;
+option go_package = "./product";
+
+message ProductInfo {
+    int64 id = 1;
+    int64 categoryId = 2;
+    string name = 3;
+    string subtitle = 4;
+    string mainImage = 5;
+    string subImages = 6;
+    string detail = 7;
+    string spec = 8;
+    int64 price = 9;
+    int64 originalPrice = 10;
+    int32 stock = 11;
+    int32 sales = 12;
+    int32 status = 13;
+    string brand = 14;
+    string createdAt = 15;
+    string updatedAt = 16;
+}
+
+message CategoryInfo {
+    int64 id = 1;
+    int64 parentId = 2;
+    string name = 3;
+    int32 sortOrder = 4;
+    int32 status = 5;
+}
+
+message CreateProductRequest {
+    int64 categoryId = 1;
+    string name = 2;
+    string subtitle = 3;
+    string mainImage = 4;
+    string subImages = 5;
+    string detail = 6;
+    string spec = 7;
+    int64 price = 8;
+    int64 originalPrice = 9;
+    int32 stock = 10;
+    string brand = 11;
+}
+
+message CreateProductResponse {
+    ProductInfo product = 1;
+}
+
+message GetProductRequest {
+    int64 id = 1;
+}
+
+message GetProductResponse {
+    ProductInfo product = 1;
+}
+
+message UpdateProductRequest {
+    int64 id = 1;
+    int64 categoryId = 2;
+    string name = 3;
+    string subtitle = 4;
+    string mainImage = 5;
+    string subImages = 6;
+    string detail = 7;
+    string spec = 8;
+    int64 price = 9;
+    int64 originalPrice = 10;
+    int32 status = 11;
+    string brand = 12;
+}
+
+message UpdateProductResponse {
+    ProductInfo product = 1;
+}
+
+message ListProductRequest {
+    int32 page = 1;
+    int32 pageSize = 2;
+    int64 categoryId = 3;
+    string keyword = 4;
+}
+
+message ListProductResponse {
+    repeated ProductInfo products = 1;
+    int64 total = 2;
+}
+
+message GetProductListRequest {
+    repeated int64 ids = 1;
+}
+
+message GetProductListResponse {
+    repeated ProductInfo products = 1;
+}
+
+message ListCategoryRequest {
+    int64 parentId = 1;
+}
+
+message ListCategoryResponse {
+    repeated CategoryInfo categories = 1;
+}
+
+service Product {
+    rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse);
+    rpc GetProduct(GetProductRequest) returns (GetProductResponse);
+    rpc UpdateProduct(UpdateProductRequest) returns (UpdateProductResponse);
+    rpc ListProduct(ListProductRequest) returns (ListProductResponse);
+    rpc GetProductList(GetProductListRequest) returns (GetProductListResponse);
+    rpc ListCategory(ListCategoryRequest) returns (ListCategoryResponse);
+}

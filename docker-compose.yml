@@ -1,0 +1,269 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: gozero-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: go_zero_ecommerce
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./deploy/sql:/docker-entrypoint-initdb.d
+      - mysql-data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p123456"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    networks:
+      - gozero-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: gozero-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gozero-network
+
+  etcd:
+    image: bitnami/etcd:3.5
+    container_name: gozero-etcd
+    environment:
+      - ALLOW_NONE_AUTHENTICATION=yes
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+    ports:
+      - "2379:2379"
+      - "2380:2380"
+    volumes:
+      - etcd-data:/bitnami/etcd
+    healthcheck:
+      test: ["CMD", "etcdctl", "endpoint", "health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gozero-network
+
+  zookeeper:
+    image: bitnami/zookeeper:3.8
+    container_name: gozero-zookeeper
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper-data:/bitnami/zookeeper
+    networks:
+      - gozero-network
+
+  kafka:
+    image: bitnami/kafka:3.6
+    container_name: gozero-kafka
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka-data:/bitnami/kafka
+    depends_on:
+      - zookeeper
+    healthcheck:
+      test: ["CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    networks:
+      - gozero-network
+
+  elasticsearch:
+    image: elasticsearch:8.11.0
+    container_name: gozero-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    networks:
+      - gozero-network
+
+  kibana:
+    image: kibana:8.11.0
+    container_name: gozero-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - gozero-network
+
+  user-rpc:
+    build:
+      context: .
+      dockerfile: deploy/dockerfile/user-rpc.Dockerfile
+    container_name: gozero-user-rpc
+    ports:
+      - "8001:8001"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      etcd:
+        condition: service_healthy
+    networks:
+      - gozero-network
+    restart: on-failure
+
+  user-api:
+    build:
+      context: .
+      dockerfile: deploy/dockerfile/user-api.Dockerfile
+    container_name: gozero-user-api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - user-rpc
+    networks:
+      - gozero-network
+    restart: on-failure
+
+  product-rpc:
+    build:
+      context: .
+      dockerfile: deploy/dockerfile/product-rpc.Dockerfile
+    container_name: gozero-product-rpc
+    ports:
+      - "8011:8011"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      etcd:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - gozero-network
+    restart: on-failure
+
+  product-api:
+    build:
+      context: .
+      dockerfile: deploy/dockerfile/product-api.Dockerfile
+    container_name: gozero-product-api
+    ports:
+      - "8010:8010"
+    depends_on:
+      - product-rpc
+    networks:
+      - gozero-network
+    restart: on-failure
+
+  stock-rpc:
+    build:
+      context: .
+      dockerfile: deploy/dockerfile/stock-rpc.Dockerfile
+    container_name: gozero-stock-rpc
+    ports:
+      - "8021:8021"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      etcd:
+        condition: service_healthy
+    networks:
+      - gozero-network
+    restart: on-failure
+
+  stock-api:
+    build:
+      context: .
+      dockerfile: deploy/dockerfile/stock-api.Dockerfile
+    container_name: gozero-stock-api
+    ports:
+      - "8020:8020"
+    depends_on:
+      - stock-rpc
+    networks:
+      - gozero-network
+    restart: on-failure
+
+  order-rpc:
+    build:
+      context: .
+      dockerfile: deploy/dockerfile/order-rpc.Dockerfile
+    container_name: gozero-order-rpc
+    ports:
+      - "8031:8031"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      etcd:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      stock-rpc:
+        condition: service_started
+      product-rpc:
+        condition: service_started
+    networks:
+      - gozero-network
+    restart: on-failure
+
+  order-api:
+    build:
+      context: .
+      dockerfile: deploy/dockerfile/order-api.Dockerfile
+    container_name: gozero-order-api
+    ports:
+      - "8030:8030"
+    depends_on:
+      - order-rpc
+    networks:
+      - gozero-network
+    restart: on-failure
+
+volumes:
+  mysql-data:
+  redis-data:
+  etcd-data:
+  zookeeper-data:
+  kafka-data:
+  es-data:
+
+networks:
+  gozero-network:
+    driver: bridge

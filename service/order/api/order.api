@@ -1,0 +1,115 @@
+syntax = "v1"
+
+info(
+	title: "订单服务 API"
+	desc: "订单服务 API 接口定义"
+	author: "go-zero-ecommerce"
+	version: "v1.0"
+)
+
+type (
+	OrderItemReq {
+		ProductId int64 `json:"productId,optional"`
+		Num       int32 `json:"num,optional"`
+		Price     int64 `json:"price,optional"`
+	}
+
+	CreateOrderReq {
+		Items           []OrderItemReq `json:"items,optional"`
+		ReceiverName    string         `json:"receiverName,optional"`
+		ReceiverPhone   string         `json:"receiverPhone,optional"`
+		ReceiverAddress string         `json:"receiverAddress,optional"`
+		Remark          string         `json:"remark,optional"`
+	}
+
+	CreateOrderResp {
+		OrderNo   string `json:"orderNo"`
+		Id        int64  `json:"id"`
+		PayAmount int64  `json:"payAmount"`
+	}
+
+	GetOrderReq {
+		OrderNo string `form:"orderNo,optional"`
+	}
+
+	OrderItemResp {
+		Id           int64  `json:"id"`
+		ProductId    int64  `json:"productId"`
+		ProductName  string `json:"productName"`
+		ProductImage string `json:"productImage"`
+		Price        int64  `json:"price"`
+		Num          int32  `json:"num"`
+		TotalPrice   int64  `json:"totalPrice"`
+	}
+
+	OrderResp {
+		Id              int64          `json:"id"`
+		OrderNo         string         `json:"orderNo"`
+		UserId          int64          `json:"userId"`
+		TotalAmount     int64          `json:"totalAmount"`
+		PayAmount       int64          `json:"payAmount"`
+		FreightAmount   int64          `json:"freightAmount"`
+		DiscountAmount  int64          `json:"discountAmount"`
+		Status          int32          `json:"status"`
+		PayType         int32          `json:"payType"`
+		ReceiverName    string         `json:"receiverName"`
+		ReceiverPhone   string         `json:"receiverPhone"`
+		ReceiverAddress string         `json:"receiverAddress"`
+		Remark          string         `json:"remark"`
+		Items           []OrderItemResp `json:"items"`
+		CreatedAt       string         `json:"createdAt"`
+		UpdatedAt       string         `json:"updatedAt"`
+	}
+
+	GetOrderResp {
+		Order OrderResp `json:"order"`
+	}
+
+	ListOrderReq {
+		Page     int32 `form:"page,optional"`
+		PageSize int32 `form:"pageSize,optional"`
+	}
+
+	ListOrderResp {
+		Orders []OrderResp `json:"orders"`
+		Total  int64       `json:"total"`
+	}
+
+	CancelOrderReq {
+		OrderNo string `json:"orderNo,optional"`
+	}
+
+	CancelOrderResp {
+		Success bool `json:"success"`
+	}
+
+	PayOrderReq {
+		OrderNo string `json:"orderNo,optional"`
+		PayType int32  `json:"payType,optional"`
+	}
+
+	PayOrderResp {
+		Success bool `json:"success"`
+	}
+)
+
+@server(
+	prefix: order
+	jwt: JwtAuth
+)
+service order-api {
+	@handler createOrderHandler
+	post /create (CreateOrderReq) returns (CreateOrderResp)
+
+	@handler getOrderHandler
+	get /detail (GetOrderReq) returns (GetOrderResp)
+
+	@handler listOrderHandler
+	get /list (ListOrderReq) returns (ListOrderResp)
+
+	@handler cancelOrderHandler
+	post /cancel (CancelOrderReq) returns (CancelOrderResp)
+
+	@handler payOrderHandler
+	post /pay (PayOrderReq) returns (PayOrderResp)
+}

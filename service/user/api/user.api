@@ -1,0 +1,93 @@
+syntax = "v1"
+
+info(
+	title: "用户服务 API"
+	desc: "用户服务 API 接口定义"
+	author: "go-zero-ecommerce"
+	version: "v1.0"
+)
+
+type (
+	RegisterReq {
+		Username string `json:"username,optional"`
+		Password string `json:"password,optional"`
+		Nickname string `json:"nickname,optional"`
+		Mobile   string `json:"mobile,optional"`
+		Email    string `json:"email,optional"`
+	}
+
+	RegisterResp {
+		Id       int64  `json:"id"`
+		Username string `json:"username"`
+		Nickname string `json:"nickname"`
+	}
+
+	LoginReq {
+		Username string `json:"username,optional"`
+		Password string `json:"password,optional"`
+	}
+
+	LoginResp {
+		AccessToken  string `json:"accessToken"`
+		RefreshToken string `json:"refreshToken"`
+		ExpiresAt    int64  `json:"expiresAt"`
+		Id           int64  `json:"id"`
+		Username     string `json:"username"`
+		Nickname     string `json:"nickname"`
+	}
+
+	UserInfoReq {
+		Id int64 `json:"id,optional"`
+	}
+
+	UserInfoResp {
+		Id        int64  `json:"id"`
+		Username  string `json:"username"`
+		Nickname  string `json:"nickname"`
+		Mobile    string `json:"mobile"`
+		Email     string `json:"email"`
+		Gender    int32  `json:"gender"`
+		Avatar    string `json:"avatar"`
+		Status    int32  `json:"status"`
+		CreatedAt string `json:"createdAt"`
+		UpdatedAt string `json:"updatedAt"`
+	}
+
+	UpdateUserReq {
+		Nickname string `json:"nickname,optional"`
+		Avatar   string `json:"avatar,optional"`
+		Gender   int32  `json:"gender,optional"`
+	}
+
+	UpdateUserResp {
+		Id       int64  `json:"id"`
+		Nickname string `json:"nickname"`
+		Avatar   string `json:"avatar"`
+		Gender   int32  `json:"gender"`
+	}
+)
+
+@server(
+	prefix: user
+)
+service user-api {
+	@handler registerHandler
+	post /register (RegisterReq) returns (RegisterResp)
+
+	@handler loginHandler
+	post /login (LoginReq) returns (LoginResp)
+
+	@server(
+		jwt: JwtAuth
+		group: v1
+	)
+	@handler userInfoHandler
+	get /userinfo (UserInfoReq) returns (UserInfoResp)
+
+	@server(
+		jwt: JwtAuth
+		group: v1
+	)
+	@handler updateUserHandler
+	put /update (UpdateUserReq) returns (UpdateUserResp)
+}
