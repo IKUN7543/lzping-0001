@@ -10,8 +10,10 @@ type Config struct {
 		DataSource string
 	}
 	Redis struct {
-		Host string
-		Type string
-		Pass string
+		Host         string
+		Type         string
+		Pass         string
+		PoolSize     int `json:",default=100"`
+		MinIdleConns int `json:",default=10"`
 	}
 }

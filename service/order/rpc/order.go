@@ -4,9 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"go-zero-ecommerce/service/order/rpc/config"
+	"go-zero-ecommerce/service/order/rpc/order"
 	"go-zero-ecommerce/service/order/rpc/server"
 	"go-zero-ecommerce/service/order/rpc/svc"
-	"go-zero-ecommerce/service/order/rpc/order"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"
@@ -22,6 +22,7 @@ func main() {
 	var c config.Config
 	conf.MustLoad(*configFile, &c)
 	ctx := svc.NewServiceContext(c)
+	defer ctx.Close()
 
 	s := zrpc.MustNewServer(c.RpcServerConf, func(grpcServer *grpc.Server) {
 		order.RegisterOrderServer(grpcServer, server.NewOrderServer(ctx))

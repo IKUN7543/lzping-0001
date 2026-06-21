@@ -3,6 +3,7 @@ package svc
 import (
 	"go-zero-ecommerce/service/stock/rpc/config"
 	"go-zero-ecommerce/service/stock/rpc/model"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/mysql"
@@ -21,10 +22,26 @@ func NewServiceContext(c config.Config) *ServiceContext {
 		panic(err)
 	}
 
+	poolSize := c.Redis.PoolSize
+	if poolSize <= 0 {
+		poolSize = 100
+	}
+	minIdle := c.Redis.MinIdleConns
+	if minIdle <= 0 {
+		minIdle = 10
+	}
+
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     c.Redis.Host,
-		Password: c.Redis.Pass,
-		DB:       0,
+		Addr:         c.Redis.Host,
+		Password:     c.Redis.Pass,
+		DB:           0,
+		PoolSize:     poolSize,
+		MinIdleConns: minIdle,
+		DialTimeout:  5 * time.Second,
+		ReadTimeout:  3 * time.Second,
+		WriteTimeout: 3 * time.Second,
+		PoolTimeout:  4 * time.Second,
+		MaxRetries:   3,
 	})
 
 	return &ServiceContext{

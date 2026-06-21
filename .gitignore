@@ -1,0 +1,6 @@
+debug.log
+*.log
+.idea/
+.vscode/
+*.exe
+vendor/
